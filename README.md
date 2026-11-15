@@ -9,6 +9,7 @@ Replay café Wi‑Fi, subway tunnels and Black Friday 503s, with the same faults
 
 [![chaos](https://github.com/nested4/playwright-chaos/actions/workflows/chaos.yml/badge.svg)](https://github.com/nested4/playwright-chaos/actions/workflows/chaos.yml)
 ![Playwright](https://img.shields.io/badge/Playwright-1.65-2EAD33?logo=playwright&logoColor=white)
+[![npm](https://img.shields.io/npm/v/playwright-chaos?color=cb3837&logo=npm)](https://www.npmjs.com/package/playwright-chaos)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
@@ -73,7 +74,11 @@ Each profile is a plain object, so you can write your own in a few lines ([`src/
 
 ## Quick start
 
-> The npm package is coming. For now, copy [`src/`](src) into your project (under 400 lines, no dependencies besides Playwright).
+```bash
+npm i -D playwright-chaos
+```
+
+Works with `@playwright/test` 1.40+, in ESM and CommonJS projects. No other dependencies.
 
 **1. Swap the import**
 
@@ -81,7 +86,7 @@ Each profile is a plain object, so you can write your own in a few lines ([`src/
 // before
 import { test, expect } from '@playwright/test';
 // after
-import { test, expect } from './chaos'; // path to the copied src/
+import { test, expect } from 'playwright-chaos';
 ```
 
 **2. Add one project per profile**
@@ -89,10 +94,10 @@ import { test, expect } from './chaos'; // path to the copied src/
 ```ts
 // playwright.config.ts
 import { defineConfig, devices } from '@playwright/test';
-import type { ChaosFixtureOptions } from './chaos';
+import type { ChaosFixtureOptions } from 'playwright-chaos';
 
 export default defineConfig<ChaosFixtureOptions>({
-  reporter: [['list'], ['./chaos/reporter.ts']],
+  reporter: [['list'], ['playwright-chaos/reporter']],
   projects: ['calm', 'bad-wifi', 'subway', 'black-friday'].map((name) => ({
     name,
     use: { ...devices['Desktop Chrome'], chaosProfile: name },
@@ -160,7 +165,7 @@ No proxy and no extra process: it's built on Playwright's own `page.route`, so i
 
 ## Roadmap
 
-- [ ] npm package
+- [x] npm package
 - [ ] WebSocket / SSE chaos
 - [ ] Offline flapping (`context.setOffline` bursts)
 - [ ] Per-endpoint rules (`/api/payments` gets ghosts, `/api/search` gets latency)
