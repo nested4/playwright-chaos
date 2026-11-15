@@ -8,7 +8,7 @@ Chaos engineering for the Playwright tests you already have.
 Replay café Wi‑Fi, subway tunnels and Black Friday 503s, with the same faults on every run.
 
 [![chaos](https://github.com/nested4/playwright-chaos/actions/workflows/chaos.yml/badge.svg)](https://github.com/nested4/playwright-chaos/actions/workflows/chaos.yml)
-![Playwright](https://img.shields.io/badge/Playwright-1.57-2EAD33?logo=playwright&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-1.65-2EAD33?logo=playwright&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
