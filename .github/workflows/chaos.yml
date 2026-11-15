@@ -1,0 +1,50 @@
+name: chaos
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1' # weekly exploration run with random seeds
+  workflow_dispatch:
+
+jobs:
+  resilient:
+    name: Resilient client survives every profile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - name: Run chaos suite
+        run: npx playwright test
+        env:
+          CHAOS_SEED: ${{ github.event_name == 'schedule' && 'random' || '' }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
+  prove:
+    name: Chaos catches the ${{ matrix.app }} client
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [fragile, naive-retry]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run prove:${{ matrix.app }}

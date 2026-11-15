@@ -1,0 +1,27 @@
+{
+  "name": "playwright-chaos",
+  "version": "0.1.0",
+  "description": "Chaos engineering for Playwright E2E tests. Inject bad Wi-Fi, subway tunnels and Black Friday 503s into the tests you already have.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "keywords": ["playwright", "chaos-engineering", "e2e", "testing", "resilience", "qa", "network", "fault-injection"],
+  "scripts": {
+    "demo": "node demo/server.mjs",
+    "test": "playwright test",
+    "test:unit": "playwright test --project=unit",
+    "chaos": "playwright test",
+    "chaos:explore": "CHAOS_SEED=random playwright test",
+    "prove:fragile": "node scripts/expect-failure.mjs fragile",
+    "prove:naive-retry": "node scripts/expect-failure.mjs naive-retry",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.57.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
