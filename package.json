@@ -1,6 +1,6 @@
 {
   "name": "playwright-chaos",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Chaos engineering for Playwright E2E tests. Inject bad Wi-Fi, subway tunnels and Black Friday 503s into the tests you already have.",
   "keywords": [
     "playwright",

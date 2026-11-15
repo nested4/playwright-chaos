@@ -2,6 +2,7 @@ import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 import type { ChaosStats } from './chaos';
+import { profiles } from './profiles';
 
 interface Row {
   passed: number;
@@ -50,26 +51,51 @@ export default class ChaosReporter implements Reporter {
     const score = total === 0 ? 100 : Math.round((passed / total) * 100);
     const grade = score === 100 ? '🟢 unbreakable' : score >= 80 ? '🟡 wobbly' : '🔴 fragile';
 
-    const lines = [
+    // Stable order: built-in profiles first (in definition order), then custom ones alphabetically.
+    const order = Object.keys(profiles);
+    const rank = (n: string) => (order.includes(n) ? order.indexOf(n) : order.length);
+    const rows = [...this.rows].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b));
+
+    const md = [
       `## 🐒 Chaos report — resilience score: **${score}%** ${grade}`,
       '',
       '| Profile | Passed | Failed | Requests | Faults injected |',
       '|---|---:|---:|---:|---:|',
-      ...[...this.rows].map(
+      ...rows.map(
         ([name, r]) =>
           `| ${r.failed ? '❌' : '✅'} \`${name}\` | ${r.passed} | ${r.failed} | ${r.requests} | ${r.faults} |`,
       ),
       '',
       `<sub>Score = tests passing under non-calm profiles. Replay any failure with the CHAOS_SEED printed in its log.</sub>`,
       '',
-    ];
-    const md = lines.join('\n');
+    ].join('\n');
 
     mkdirSync(dirname(this.outputFile), { recursive: true });
     writeFileSync(this.outputFile, md);
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + '\n');
 
-    console.log('\n' + md.replace(/\*\*/g, '').replace(/<\/?sub>/g, ''));
+    console.log(this.terminalTable(score, grade, rows));
+  }
+
+  private terminalTable(score: number, grade: string, rows: Array<[string, Row]>): string {
+    const tty = process.stdout.isTTY || !!process.env.FORCE_COLOR;
+    const paint = (code: number, s: string) => (tty ? `\x1b[${code}m${s}\x1b[0m` : s);
+    const nameW = Math.max(7, ...rows.map(([n]) => n.length));
+    const head = `  ${'Profile'.padEnd(nameW + 3)}${'Passed'.padStart(8)}${'Failed'.padStart(8)}${'Requests'.padStart(10)}${'Faults'.padStart(8)}`;
+    const body = rows.map(([name, r]) => {
+      const icon = r.failed ? paint(31, '✘') : paint(32, '✔');
+      const failed = r.failed ? paint(31, String(r.failed).padStart(8)) : String(r.failed).padStart(8);
+      return `  ${icon}  ${name.padEnd(nameW)}${String(r.passed).padStart(8)}${failed}${String(r.requests).padStart(10)}${String(r.faults).padStart(8)}`;
+    });
+    const color = score === 100 ? 32 : score >= 80 ? 33 : 31;
+    return [
+      '',
+      `  🐒 Chaos report   resilience score ${paint(1, paint(color, `${score}%`))}  ${grade}`,
+      '',
+      paint(2, head),
+      ...body,
+      '',
+    ].join('\n');
   }
 
   printsToStdio(): boolean {

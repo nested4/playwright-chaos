@@ -32,7 +32,7 @@ test.describe(`shop (${APP} client)`, () => {
     }
 
     // Ask the backend directly (not through the chaotic browser network) what really happened.
-    const orders = await (await request.get('/api/orders', { headers: { 'x-session': session } })).json();
-    expect(orders, 'every click must create exactly one charge').toHaveLength(10);
+    const orders: unknown[] = await (await request.get('/api/orders', { headers: { 'x-session': session } })).json();
+    expect(orders.length, '💸 customer charges for 10 orders').toBe(10);
   });
 });

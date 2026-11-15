@@ -15,6 +15,8 @@ Replay café Wi‑Fi, subway tunnels and Black Friday 503s, with the same faults
 
 </div>
 
+<p align="center"><img src="docs/demo.gif" alt="playwright-chaos catching a double charge under Black Friday traffic, then the resilient client passing every profile" width="900"></p>
+
 ---
 
 ## The bug your test suite will never find
@@ -27,11 +29,12 @@ Your CI is green, because your CI runs on a perfect network.
 The demo shop in this repo has exactly that bug. Here is the same test, `loyal customer: 10 orders, exactly 10 charges`, run under the `black-friday` profile:
 
 ```
-Error: every click must create exactly one charge
+Error: 💸 customer charges for 10 orders
 
-  expect(received).toHaveLength(expected)
-  Expected length: 10
-  Received length: 13
+  expect(received).toBe(expected) // Object.is equality
+
+  Expected: 10
+  Received: 13
 ```
 
 **13 charges for 10 orders.** No flaky selector, no timing issue. A real money bug, caught before it shipped.
@@ -39,16 +42,17 @@ Error: every click must create exactly one charge
 ## What you get
 
 ```
-## 🐒 Chaos report — resilience score: 50% 🔴 fragile
+  🐒 Chaos report   resilience score 50%  🔴 fragile
 
-| Profile          | Passed | Failed | Requests | Faults injected |
-|------------------|-------:|-------:|---------:|----------------:|
-| ✅ calm          |      3 |      0 |       14 |               0 |
-| ❌ subway        |      2 |      1 |        6 |               1 |
-| ❌ bad-wifi      |      1 |      2 |       12 |               2 |
-| ✅ budget-phone  |      3 |      0 |       14 |               0 |
-| ❌ black-friday  |      0 |      3 |        3 |               3 |
+  Profile          Passed  Failed  Requests  Faults
+  ✔  calm               3       0        14       0
+  ✘  bad-wifi           1       2        12       2
+  ✘  subway             2       1         6       1
+  ✘  black-friday       0       3         3       3
+  ✔  budget-phone       3       0        14       0
 ```
+
+The same report goes to `chaos-report.md` and, in GitHub Actions, the job summary as a Markdown table.
 
 - **Drop-in.** Change one import. Every test now runs in "network weather".
 - **Deterministic.** Each test gets a stable seed, so the same faults hit every run and CI doesn't turn flaky. A failing test prints its own replay command:
